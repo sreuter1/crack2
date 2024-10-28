@@ -62,18 +62,18 @@ int main(int argc, char *argv[])
     }
     
     // Open the dictionary file for reading.
-    FILE * dictFile = fopen(argv[1], "r");
+    FILE * dictFile = fopen(argv[2], "r");
     char hash[HASH_LEN];
     char dictLine[PASS_LEN];
     char str[HASH_LEN];
     int count = 0;
 
-    while(fgets(dictLine, HASH_LEN, dictFile))
+    while(fgets(dictLine, PASS_LEN, dictFile))
     {
         // For each dictionary word, pass it to tryWord, which
         // will attempt to match it against the hashes in the hash_file.
         strcpy(str, dictLine);
-        char * hash = tryWord(str, argv[2]);
+        char * hash = tryWord(str, argv[1]);
 
         // If we got a match, display the hash and the word. For example:
         //   5d41402abc4b2a76b9719d911017c592 hello
