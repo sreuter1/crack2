@@ -7,54 +7,58 @@
 const int PASS_LEN = 20;        // Maximum any password will be
 const int HASH_LEN = 33;        // Length of MD5 hash strings
 
+// compares the hash of the plaintext to the hashes in the hashFile.
+
 
 // Given a target plaintext word, use it to try to find
 // a matching hash in the hashFile.
 // Get this function working first!
 char * tryWord(char * plaintext, char * hashFilename)
 {
-    // Hash the plaintext
+    // Hash the plaintext to compare to the hashes in the file
     char *hash = md5(plaintext, strlen(plaintext));
+    
+    // declaring the variable to store the lines from the hashFile
     char hashLine[HASH_LEN];
-    int isMatch = 0;
 
     // Open the hash file
-    FILE * inFile = fopen(hashFilename, "r");
+    FILE * hashFile = fopen(hashFilename, "r");
 
     // Loop through the hash file, one line at a time.
-    while (fgets(hashLine, HASH_LEN, inFile))
+    while (fgets(hashLine, HASH_LEN, hashFile)) // getting the line from the hashFile and storing it in hashLine
     {
-        // Attempt to match the hash from the file to the
-        // hash of the plaintext.
-        isMatch = strcmp(hash, hashLine);
-
+        // trim off the newline 
+        for(int i = 0; i < strlen(hashLine) ; i++)
+        {
+            if(hashLine[i] == '\n')
+            {
+                hashLine[i] = '\0';
+                break;
+            }
+        }
+        
         // If there is a match, you'll return the hash.
         // If not, return NULL.
-        if (isMatch)
+        if (strcmp(hash, hashLine))
         {
-            break;
+            fclose(hashFile);
+            return hash; // rather than hashLine because this isn't local
         }
 
     }
 
-    // Before returning, do any needed cleanup:
-    //   Close files?
-    //   Free memory?
-    fclose(inFile);
+    // closing file and checking the memory
+    fclose(hashFile);
 
-    // Modify this line so it returns the hash
-    // that was found, or NULL if not found.
-    if (!isMatch)
-    {
-        return NULL;
-    }
-    return hash;
+    // returning null because this accounts for the case that 
+    return NULL;
 
 }
 
 
 int main(int argc, char *argv[])
 {
+    // makes sure that it gets the correct arguments.
     if (argc < 3) 
     {
         fprintf(stderr, "Usage: %s hash_file dict_file\n", argv[0]);
@@ -64,25 +68,33 @@ int main(int argc, char *argv[])
     // Open the dictionary file for reading.
     FILE * dictFile = fopen(argv[2], "r");
     char hash[HASH_LEN];
-    char dictLine[PASS_LEN];
+    char plainText[PASS_LEN];
     char str[HASH_LEN];
     int count = 0;
 
-    while(fgets(dictLine, PASS_LEN, dictFile))
+    while(fgets(plainText, PASS_LEN, dictFile)) // gets the plaintext word from the file and runs it into tryWord
     {
-        // For each dictionary word, pass it to tryWord, which
-        // will attempt to match it against the hashes in the hash_file.
-        strcpy(str, dictLine);
-        char * hash = tryWord(str, argv[1]);
+        // trim the newline off of the plainText
+        for(int i = 0; i < strlen(plainText) ; i++)
+        {
+            if(plainText[i] == '\n')
+            {
+                plainText[i] = '\0';
+                break;
+            }
+        }
 
-        // If we got a match, display the hash and the word. For example:
-        //   5d41402abc4b2a76b9719d911017c592 hello
-        if (strcmp(hash, str))
+        // enters in the line from the plantext and the name of the hash file
+        char * hash = tryWord(plainText, argv[1]);
+
+        // If it doesn't return null print it and count it
+        if (hash != NULL)
         {
             count++;
-            printf("%s   %s", hash, dictLine);
+            printf("%-25s%s\n", plainText, hash);
         }
-        
+        free(hash);
+        hash = NULL;
 
     }
 
@@ -92,7 +104,7 @@ int main(int argc, char *argv[])
     // Display the number of hashes that were cracked.
     printf("%d hashes cracked!\n", count);
 
-    // Free up any malloc'd memory?
+    // Free up any malloc'd memory... probably hash from calling the 
     
 }
 
