@@ -27,7 +27,7 @@ char * tryWord(char * plaintext, char * hashFilename)
     // Loop through the hash file, one line at a time.
     while (fgets(hashLine, HASH_LEN, hashFile)) // getting the line from the hashFile and storing it in hashLine
     {
-        // trim off the newline 
+        // trim off the newline in hashLine
         for(int i = 0; i < strlen(hashLine) ; i++)
         {
             if(hashLine[i] == '\n')
@@ -39,9 +39,10 @@ char * tryWord(char * plaintext, char * hashFilename)
         
         // If there is a match, you'll return the hash.
         // If not, return NULL.
-        if (strcmp(hash, hashLine))
+        if ( !(strcmp(hash, hashLine)))
         {
             fclose(hashFile);
+            // printf("%-35s%-35s", hashLine, hash);
             return hash; // rather than hashLine because this isn't local
         }
 
@@ -67,7 +68,6 @@ int main(int argc, char *argv[])
     
     // Open the dictionary file for reading.
     FILE * dictFile = fopen(argv[2], "r");
-    char hash[HASH_LEN];
     char plainText[PASS_LEN];
     char str[HASH_LEN];
     int count = 0;
@@ -91,10 +91,9 @@ int main(int argc, char *argv[])
         if (hash != NULL)
         {
             count++;
-            printf("%-25s%s\n", plainText, hash);
+            printf("%-20s%s\n", plainText, hash);
         }
         free(hash);
-        hash = NULL;
 
     }
 
